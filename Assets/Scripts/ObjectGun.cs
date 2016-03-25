@@ -6,6 +6,7 @@ public class ObjectGun : MonoBehaviour {
   public GameObject objectToShoot;
   public float impulseAmount;
   public Vector3 spawnOffset;
+  public Camera pickingCamera;
 
 	// Use this for initialization
 	void Start () {
@@ -24,8 +25,21 @@ public class ObjectGun : MonoBehaviour {
         Vector3 positionToSpawnAt = transform.position + (transform.forward) + spawnOffset;
         newGO.transform.position = positionToSpawnAt;
 
-        rigidbody = newGO.GetComponent<Rigidbody>();
-        rigidbody.AddForce(transform.forward * impulseAmount, ForceMode.Impulse);
+        // Creates a ray that is cast from the mouse's position into the world.
+        Vector3 mousePosition = Input.mousePosition;
+        Ray pickingRay = pickingCamera.ScreenPointToRay(mousePosition);
+
+        // Use the ray to see if any object collides with it.
+        RaycastHit hit;
+        bool success = Physics.Raycast(pickingRay, out hit);
+        if (success)
+        {
+            Debug.Log("The name of the picked object is: " + hit.collider.gameObject);
+            Vector3 shotDirection = hit.point - transform.position;
+            rigidbody = newGO.GetComponent<Rigidbody>();
+            rigidbody.AddForce(shotDirection.normalized * impulseAmount, ForceMode.Impulse);
+        }        
+        Destroy(newGO, 5.0f);
       }
     }
   }
